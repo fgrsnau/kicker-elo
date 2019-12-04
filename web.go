@@ -179,7 +179,7 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
 		var users [5]*User
-		usernames := [5]string{tokenUser, request.Front1, request.Front2, request.Back1, request.Back2}
+		usernames := [5]string{tokenUser, request.Front1, request.Back1, request.Front2, request.Back2}
 		for i, username := range usernames {
 			user, err := Db.GetUser(username)
 			if err != nil || user == nil {
