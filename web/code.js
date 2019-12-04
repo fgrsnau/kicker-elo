@@ -163,7 +163,7 @@ async function handleAddGame(event) {
 		'Teams': [
 			[form.front1.value, form.back1.value],
 			[form.front2.value, form.back2.value]],
-		'Scores': [
+		'Score': [
 			parseInt(form.score1.value, 10),
 			parseInt(form.score2.value, 10)]
 	};
@@ -173,7 +173,7 @@ async function handleAddGame(event) {
 		return;
 	}
 
-	if (isNaN(data.Scores[0]) || isNaN(data.Scores[1])) {
+	if (isNaN(data.Score[0]) || isNaN(data.Score[1])) {
 		alert('Invalid input: Scores must be integers.');
 		return;
 	}

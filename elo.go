@@ -66,11 +66,11 @@ func eloProcessGame(tx *sql.Tx, game Game) (err error) {
 	result := eloComputeResult(game)
 	change := eloGoalFactor(game) * (result - expected)
 
-	changes := make(map[int64] float64)
-	changes[game.Front1.Id] = change
-	changes[game.Back1.Id] = change
-	changes[game.Front2.Id] = -change
-	changes[game.Back2.Id] = -change
+	changes := make(map[int64]float64)
+	changes[game.Teams[0].Front.Id] = change
+	changes[game.Teams[0].Back.Id] = change
+	changes[game.Teams[1].Front.Id] = -change
+	changes[game.Teams[1].Back.Id] = -change
 
 	for user, change := range changes {
 		var k float64
@@ -79,7 +79,7 @@ func eloProcessGame(tx *sql.Tx, game Game) (err error) {
 			return
 		}
 
-		err = eloUpdate(tx, user, k * change)
+		err = eloUpdate(tx, user, k*change)
 		if err != nil {
 			return
 		}
@@ -89,20 +89,22 @@ func eloProcessGame(tx *sql.Tx, game Game) (err error) {
 }
 
 func eloComputeResult(game Game) float64 {
-	if game.Score1 < game.Score2 {
+	if game.Score[0] < game.Score[1] {
 		return 0
 	}
-
-	if game.Score1 > game.Score2 {
+	if game.Score[0] > game.Score[1] {
 		return 1
 	}
-
 	return 0.5
 }
 
 func eloExpectedResult(tx *sql.Tx, game Game) (float64, error) {
 	var elo [4]float64
-	users := [4]int64{game.Front1.Id, game.Back1.Id, game.Front2.Id, game.Back2.Id}
+	users := [4]int64{
+		game.Teams[0].Front.Id,
+		game.Teams[0].Back.Id,
+		game.Teams[1].Front.Id,
+		game.Teams[1].Back.Id}
 	for i, user := range users {
 		row := tx.QueryRow("SELECT elo FROM elo WHERE user=?", user)
 		if err := row.Scan(&elo[i]); err != nil {
@@ -110,13 +112,13 @@ func eloExpectedResult(tx *sql.Tx, game Game) (float64, error) {
 		}
 	}
 
-	team1 := (elo[0] + elo[1]) * 0.5
-	team2 := (elo[2] + elo[3]) * 0.5
-	return 1.0 / (math.Pow(10, (team2-team1)/400.0) + 1), nil
+	team0 := (elo[0] + elo[1]) * 0.5
+	team1 := (elo[2] + elo[3]) * 0.5
+	return 1.0 / (math.Pow(10, (team1-team0)/400.0) + 1), nil
 }
 
 func eloGoalFactor(game Game) float64 {
-	scoreDiff := game.Score1 - game.Score2
+	scoreDiff := game.Score[1] - game.Score[0]
 	if scoreDiff < 0 {
 		scoreDiff = -scoreDiff
 	}

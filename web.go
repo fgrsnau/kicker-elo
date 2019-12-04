@@ -85,7 +85,7 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 	type ResponseItem struct {
 		User, First, Last string
 		Elo               float32
-		Won, Lost, Games  uint32
+		Won, Lost, Games  int
 	}
 	var response []ResponseItem
 
@@ -98,9 +98,9 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 				First: user.First,
 				Last:  user.Last,
 				Elo:   user.Elo,
-				Won:   0,
-				Lost:  0,
-				Games: 0,
+				Won:   user.Won,
+				Lost:  user.Lost,
+				Games: user.Games,
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -137,26 +137,26 @@ func webHandleGames(w http.ResponseWriter, r *http.Request) {
 				Teams: [2]TeamItem{
 					TeamItem{
 						Front: UserItem{
-							User:  game.Front1.User,
-							First: game.Front1.First,
-							Last:  game.Front1.Last},
+							User:  game.Teams[0].Front.User,
+							First: game.Teams[0].Front.First,
+							Last:  game.Teams[0].Front.Last},
 						Back: UserItem{
-							User:  game.Back1.User,
-							First: game.Back1.First,
-							Last:  game.Back1.Last},
+							User:  game.Teams[0].Back.User,
+							First: game.Teams[0].Back.First,
+							Last:  game.Teams[0].Back.Last},
 					},
 					TeamItem{
 						Front: UserItem{
-							User:  game.Front2.User,
-							First: game.Front2.First,
-							Last:  game.Front2.Last},
+							User:  game.Teams[1].Front.User,
+							First: game.Teams[1].Front.First,
+							Last:  game.Teams[1].Front.Last},
 						Back: UserItem{
-							User:  game.Back2.User,
-							First: game.Back2.First,
-							Last:  game.Back2.Last},
+							User:  game.Teams[1].Back.User,
+							First: game.Teams[1].Back.First,
+							Last:  game.Teams[1].Back.Last},
 					},
 				},
-				Score: [2]int{game.Score1, game.Score2},
+				Score: game.Score,
 			}
 
 			response = append(response, item)
@@ -173,9 +173,9 @@ func webHandleGames(w http.ResponseWriter, r *http.Request) {
 
 func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		Token  string
-		Teams  [2][2]string
-		Scores [2]int
+		Token string
+		Teams [2][2]string
+		Score [2]int
 	}
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
@@ -197,14 +197,12 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		game := &Game{
-			Front1: *users[1],
-			Front2: *users[2],
-			Back1:  *users[3],
-			Back2:  *users[4],
-			Score1: request.Scores[0],
-			Score2: request.Scores[1],
-		}
+		game := &Game{}
+		game.Teams[0].Front = *users[1]
+		game.Teams[0].Front = *users[2]
+		game.Teams[0].Back = *users[3]
+		game.Teams[0].Back = *users[4]
+		game.Score = request.Score
 		Db.AddGame(game)
 		Db.AddSignOff(users[0], game)
 		w.WriteHeader(http.StatusOK)

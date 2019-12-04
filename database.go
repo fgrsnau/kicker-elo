@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -15,7 +16,11 @@ type Database struct {
 }
 
 func (d *Database) Initialize() {
-	db, err := sql.Open("sqlite3", "elo.db?_journal_mode=WAL&foreign_keys=1&_busy_timeout=30000")
+	options := [...]string{
+		"_journal_mode=WAL",
+		"foreign_keys=1",
+		"_busy_timeout=30000"}
+	db, err := sql.Open("sqlite3", "elo.db?"+strings.Join(options[:], "&"))
 	if err != nil {
 		panic(err)
 	}
@@ -119,11 +124,11 @@ func (d *Database) GetGames(ascending bool) (<-chan Game, chan<- bool) {
 		for rows.Next() {
 			var game Game
 			err := rows.Scan(
-				&game.Id, &game.Score1, &game.Score2,
-				&game.Front1.Id, &game.Front1.User, &game.Front1.First, &game.Front1.Last,
-				&game.Back1.Id, &game.Back1.User, &game.Back1.First, &game.Back1.Last,
-				&game.Front2.Id, &game.Front2.User, &game.Front2.First, &game.Front2.Last,
-				&game.Back2.Id, &game.Back2.User, &game.Back2.First, &game.Back2.Last)
+				&game.Id, &game.Score[0], &game.Score[1],
+				&game.Teams[0].Front.Id, &game.Teams[0].Front.User, &game.Teams[0].Front.First, &game.Teams[0].Front.Last,
+				&game.Teams[0].Back.Id, &game.Teams[0].Back.User, &game.Teams[0].Back.First, &game.Teams[0].Back.Last,
+				&game.Teams[1].Front.Id, &game.Teams[1].Front.User, &game.Teams[1].Front.First, &game.Teams[1].Front.Last,
+				&game.Teams[1].Back.Id, &game.Teams[1].Back.User, &game.Teams[1].Back.First, &game.Teams[1].Back.Last)
 			if err != nil {
 				panic(err)
 			}
@@ -148,7 +153,7 @@ func (d *Database) AddGame(game *Game) {
 	}
 
 	res, err := d.Db.Exec("INSERT INTO game (front1, back1, score1, front2, back2, score2) VALUES (?, ?, ?, ?, ?, ?)",
-		game.Front1.Id, game.Back1.Id, game.Score1, game.Front2.Id, game.Back2.Id, game.Score2)
+		game.Teams[0].Front.Id, game.Teams[0].Back.Id, game.Score[0], game.Teams[1].Front.Id, game.Teams[1].Back.Id, game.Score[1])
 	if err != nil {
 		panic(err)
 	}
