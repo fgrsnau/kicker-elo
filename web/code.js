@@ -159,30 +159,36 @@ async function handleAddGame(event) {
 	var result;
 	var form = $('#form_addgame')[0];
 	var data = {
-		'Token':   getToken(),
-		'Front1':  form.front1.value,
-		'Back1':   form.back1.value,
-		'Front2':  form.front2.value,
-		'Back2':   form.back2.value,
-		'Score1':  parseInt(form.score1.value, 10),
-		'Score2':  parseInt(form.score2.value, 10)
+		'Token': getToken(),
+		'Teams': [
+			[form.front1.value, form.back1.value],
+			[form.front2.value, form.back2.value]],
+		'Scores': [
+			parseInt(form.score1.value, 10),
+			parseInt(form.score2.value, 10)]
 	};
 
-	if (data.Front1 == '' || data.Back1 == '' || data.Front2 == '' || data.Back2 == '') {
+	if (data.Teams[0][0] === '' || data.Teams[0][1] == '' || data.Teams[1][0] == '' || data.Teams[1][1] == '') {
 		alert('Invalid input: Players must be selected.');
 		return;
 	}
 
-	if (isNaN(data.Score1) || isNaN(data.Score2)) {
+	if (isNaN(data.Scores[0]) || isNaN(data.Scores[1])) {
 		alert('Invalid input: Scores must be integers.');
 		return;
 	}
 
-	if (data.Front1 == data.Front2 || data.Front1 == data.Back2 || data.Back1 == data.Front2 || data.Back1 == data.Back2) {
-		alert('Two teams must be non-intersecting.');
+	var overlapping = false;
+	data.Teams[0].forEach(function(player0) {
+		data.Teams[1].forEach(function(player1) {
+			overlapping = overlapping || (player0 == player1);
+		});
+	});
+
+	if (overlapping) {
+		alert('Two teams must be non-overlapping.');
 		return;
 	}
-
 
 	try {
 		await $.post('/api/v1/add_game', JSON.stringify(data))

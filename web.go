@@ -173,13 +173,15 @@ func webHandleGames(w http.ResponseWriter, r *http.Request) {
 
 func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		Token, Front1, Back1, Front2, Back2 string
-		Score1, Score2                      int
+		Token  string
+		Teams  [2][2]string
+		Scores [2]int
 	}
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
 		var users [5]*User
-		usernames := [5]string{tokenUser, request.Front1, request.Back1, request.Front2, request.Back2}
+		usernames := [5]string{tokenUser, request.Teams[0][0], request.Teams[0][1],
+			request.Teams[1][0], request.Teams[1][1]}
 		for i, username := range usernames {
 			user, err := Db.GetUser(username)
 			if err != nil || user == nil {
@@ -189,7 +191,8 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 			users[i] = user
 		}
 
-		if users[1].Id == users[3].Id || users[1].Id == users[4].Id || users[2].Id == users[3].Id || users[2].Id == users[4].Id {
+		if users[1].Id == users[3].Id || users[1].Id == users[4].Id ||
+			users[2].Id == users[3].Id || users[2].Id == users[4].Id {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -199,8 +202,8 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 			Front2: *users[2],
 			Back1:  *users[3],
 			Back2:  *users[4],
-			Score1: request.Score1,
-			Score2: request.Score2,
+			Score1: request.Scores[0],
+			Score2: request.Scores[1],
 		}
 		Db.AddGame(game)
 		Db.AddSignOff(users[0], game)
