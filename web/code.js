@@ -229,13 +229,15 @@ function updatePageGames() {
 	});
 
 	var table = $('#users_table');
-	table.html('<thead><tr><th>Player</th><th>Elo Score</th></tr></thead>');
+	table.html('<thead><tr><th>Player</th><th>Elo Score</th><th>Won</th><th>Lost</th><th>Total</th></tr></thead>');
 	var tbody = table.append($('<tbody>'));
 	tmp.forEach(function(user) {
-		var row = $('<tr>');
+		var row = $('<tr>').appendTo(tbody);
 		row.append($('<td>').text(`${user.First} ${user.Last}`));
-		row.append($('<td>').text(`${user.Elo.toFixed(1)}`));
-		tbody.append(row);
+		row.append($('<td>').text(`${user.Elo.toFixed(0)}`));
+		row.append($('<td>').text(`${user.Won}`));
+		row.append($('<td>').text(`${user.Lost}`));
+		row.append($('<td>').text(`${user.Games}`));
 	});
 
 	var formatName = function(user) {
