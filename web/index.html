@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>VLL Leaderboard</title>
+		<meta name="viewport" content="width=device-width, initial-scale: 1.0"/>
+		<link rel="stylesheet" type="text/css" href="/style.css"/>
+		<script type="text/javascript" src="/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="/code.js"></script>
+	</head>
+	<body>
+		<h1>VLL Leaderboard</h1>
+		<p id="js_warning">
+			Something is wrong and does not work.
+			Note that this site requires a (very) very recent and standards-compliant browser.
+			Make sure to not block scripts for this site.
+		</p>
+
+		<main id="page_login">
+			<h2>Login</h2>
+			<form id="form_login" class="grid_form">
+				<label>Username:</label><input name="username" type="text"></input>
+				<label>Password:</label><input name="password" type="password"></input>
+				<button type="submit">Login</button>
+			</form>
+			<p>If you do not have an account yet, please <a id="login_register" href="">sign up</a>!</p>
+		</main>
+
+		<main id="page_register">
+			<h2>Sign Up</h2>
+			<form id="form_register" class="grid_form">
+				<label for="username">Username:</label><input name="username" type="text"></input>
+				<label for="passwodr">Password:</label><input name="password" type="password"></input>
+				<label for="first">First Name:</label><input name="first" type="text"></input>
+				<label for="last">Last Name:</label><input name="last" type="text"></input>
+				<button type="submit">Sign Up</button>
+			</form>
+			<p>If you already have an account, please <a id="register_login" href="">log in</a>!</p>
+		</main>
+
+		<main id="page_games">
+			<h2>Game Overview</h2>
+			<button type="button" id="games_logout">Log Out</button>
+			<button type="button" id="games_add">Add New Game</button>
+			<table id="games_table"></table>
+			<table id="users_table"></table
+			<p>Computation of Elo ranking analog to <a href="https://en.wikipedia.org/wiki/World_Football_Elo_Ratings">World Football Elo Ratings</a>. Initial Elo estimated at 500. K-value converges after 10 played games from value of 35 to 25.</p>
+		</main>
+
+		<main id="page_addgame">
+			<h2>Add New Game</h2>
+			<form id="form_addgame" class="grid_form">
+				<h3>Team Orange</h3>
+				<label for="front1">Front Player:</label><select class="select-player" name="front1"></select>
+				<label for="back1">Back Player:</label><select class="select-player" name="back1"></select>
+				<label for="score1">Score:</label><select class="select-score" name="score1"></select>
+				<h3>Team Black</h3>
+				<label for="front2">Front Player:</label><select class="select-player" name="front2"></select>
+				<label for="back2">Back Player:</label><select class="select-player" name="back2"></select>
+				<label for="score2">Score:</label><select class="select-score" name="score2"></select>
+				<button type="submit">Submit</button>
+			</form>
+			<p>If you do not want add a new game, you can <a id="addgame_back" href="">go back</a>.</p>
+		</main>
+	</body>
+</html>

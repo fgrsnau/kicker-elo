@@ -1,0 +1,85 @@
+/*
+ * Generic stuff.
+ */
+
+html {
+	--color-vll-orange:        hsl(20, 75%, 55%);
+	--color-vll-orange-bright: hsl(20, 75%, 75%);
+	--color-vll-green:         hsl(128, 39%, 52%);
+	--color-vll-green-bright:  hsl(128, 39%, 75%);
+
+	font-family: sans-serif;
+}
+
+main {
+	display: none;
+}
+
+/*
+ * Make input fields bigger in case a touchscreen or similar is used.
+ */
+
+@media (pointer: coarse) {
+	button, input, select {
+		padding: 1em;
+	}
+}
+
+/*
+ * Styling of grid forms.
+ */
+
+.grid_form {
+	max-width: 30em;
+	display: grid;
+	grid-template-columns: 7em 1fr;
+	grid-column-gap: 0;
+	grid-row-gap: 0.4em;
+	place-items: center stretch;
+}
+
+.grid_form * {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.grid_form label {
+	text-align: center;
+}
+
+.grid_form button,
+.grid_form h3 {
+	grid-column: 1 / 3;
+}
+
+/*
+ * Styling of games table.
+ */
+
+#page_games table {
+	margin-top: 2em;
+	margin-bottom: 2em;
+	border-collapse: collapse;
+	width: 100%;
+	max-width: 50em;
+}
+
+#page_games table th,
+#page_games table td {
+	text-align: left;
+	padding: .5em;
+	border: 0;
+}
+
+#page_games table strong {
+	font-weight: bold;
+}
+
+#page_games table thead {
+	color: white;
+	background-color: var(--color-vll-green);
+}
+
+#page_games table tbody tr:nth-child(even) {
+	background-color: #eee;
+}
