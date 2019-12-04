@@ -159,6 +159,7 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 	type ResponseItem struct {
 		User, First, Last string
 		Elo               float32
+		Won, Lost, Games  uint32
 	}
 	var response []ResponseItem
 
@@ -171,6 +172,9 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 				First: user.First,
 				Last:  user.Last,
 				Elo:   user.Elo,
+				Won:   0,
+				Lost:  0,
+				Games: 0,
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -188,10 +192,14 @@ func webHandleGames(w http.ResponseWriter, r *http.Request) {
 		User, First, Last string
 	}
 
+	type TeamItem struct {
+		Front, Back UserItem
+	}
+
 	type GameItem struct {
-		Id                           int64
-		Front1, Back1, Front2, Back2 UserItem
-		Score1, Score2               int
+		Id    int64
+		Teams [2]TeamItem
+		Score [2]int
 	}
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
@@ -199,25 +207,30 @@ func webHandleGames(w http.ResponseWriter, r *http.Request) {
 		cGame, cAbort := Db.GetGames(false)
 		for game := range cGame {
 			item := GameItem{
-				Id:     game.Id,
-				Score1: game.Score1,
-				Score2: game.Score2,
-				Front1: UserItem{
-					User:  game.Front1.User,
-					First: game.Front1.First,
-					Last:  game.Front1.Last},
-				Back1: UserItem{
-					User:  game.Back1.User,
-					First: game.Back1.First,
-					Last:  game.Back1.Last},
-				Front2: UserItem{
-					User:  game.Front2.User,
-					First: game.Front2.First,
-					Last:  game.Front2.Last},
-				Back2: UserItem{
-					User:  game.Back2.User,
-					First: game.Back2.First,
-					Last:  game.Back2.Last},
+				Id: game.Id,
+				Teams: [2]TeamItem{
+					TeamItem{
+						Front: UserItem{
+							User:  game.Front1.User,
+							First: game.Front1.First,
+							Last:  game.Front1.Last},
+						Back: UserItem{
+							User:  game.Back1.User,
+							First: game.Back1.First,
+							Last:  game.Back1.Last},
+					},
+					TeamItem{
+						Front: UserItem{
+							User:  game.Front2.User,
+							First: game.Front2.First,
+							Last:  game.Front2.Last},
+						Back: UserItem{
+							User:  game.Back2.User,
+							First: game.Back2.First,
+							Last:  game.Back2.Last},
+					},
+				},
+				Score: [2]int{game.Score1, game.Score2},
 			}
 
 			response = append(response, item)

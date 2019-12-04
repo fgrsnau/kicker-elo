@@ -238,25 +238,27 @@ function updatePageGames() {
 		tbody.append(row);
 	});
 
+	var formatName = function(user) {
+		return `${user.First} ${user.Last[0]}.`;
+	};
+
 	var table = $('#games_table');
 	table.html('<thead><tr><th>Team Orange</th><th>Team Black</th><th>Result</th></tr></thead>');
 	var tbody = table.append($('<tbody>'));
 	games.forEach(function (game) {
 		var cols = [
-			$('<td>').text(`${game.Front1.First} ${game.Front1.Last[0]}. + ${game.Back1.First} ${game.Back1.Last[0]}.`),
-			$('<td>').text(`${game.Front2.First} ${game.Front2.Last[0]}. + ${game.Back2.First} ${game.Back2.Last[0]}.`),
-			$('<td>').text(`${game.Score1} : ${game.Score2}`),
+			$('<td>').text(`${formatName(game.Teams[0].Front)} + ${formatName(game.Teams[0].Back)}`),
+			$('<td>').text(`${formatName(game.Teams[1].Front)} + ${formatName(game.Teams[1].Back)}`),
+			$('<td>').text(`${game.Score[0]} : ${game.Score[1]}`),
 		]
 
-		if (game.Score1 > game.Score2) {
-			cols[0].wrapInner('<strong>');
+		for (var i = 0; i < 2; i++) {
+			if (game.Score[i] > game.Score[1-i]) {
+				cols[i].wrapInner('<strong>');
+			}
 		}
 
-		if (game.Score2 > game.Score1) {
-			cols[1].wrapInner('<strong>');
-		}
-
-		if (Math.abs(game.Score2 - game.Score1) > 2) {
+		if (Math.abs(game.Score[1] - game.Score[0]) > 2) {
 			cols[2].wrapInner('<strong>');
 		}
 
