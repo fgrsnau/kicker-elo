@@ -29,7 +29,7 @@ func (d *Database) Initialize() {
 
 func (d *Database) GetUsers() []*User {
 	rows, err := d.Db.Query(
-		`SELECT u.id, u.user, u.first, u.last, COALESCE(e.elo, ?)
+		`SELECT u.id, u.user, u.first, u.last, COALESCE(e.elo, ?), COALESCE(e.won, 0), COALESCE(e.lost, 0), COALESCE(e.games, 0)
 		FROM user u
 		INNER JOIN elo e ON e.user = u.id`,
 		EloInitialValue)
@@ -41,7 +41,7 @@ func (d *Database) GetUsers() []*User {
 	users := make([]*User, 0)
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.Id, &user.User, &user.First, &user.Last, &user.Elo); err != nil {
+		if err := rows.Scan(&user.Id, &user.User, &user.First, &user.Last, &user.Elo, &user.Won, &user.Lost, &user.Games); err != nil {
 			panic(err)
 		}
 		users = append(users, &user)
@@ -55,13 +55,13 @@ func (d *Database) GetUsers() []*User {
 
 func (d *Database) GetUser(user string) (*User, error) {
 	row := d.Db.QueryRow(`
-		SELECT u.id, u.user, u.first, u.last, COALESCE(e.elo, ?)
+		SELECT u.id, u.user, u.first, u.last, COALESCE(e.elo, ?), COALESCE(e.won, 0), COALESCE(e.lost, 0), COALESCE(e.games, 0)
 		FROM user u
 		INNER JOIN elo e ON e.user = u.id
 		WHERE u.user=?`, EloInitialValue, user)
 
 	var result User
-	if err := row.Scan(&result.Id, &result.User, &result.First, &result.Last, &result.Elo); err != nil {
+	if err := row.Scan(&result.Id, &result.User, &result.First, &result.Last, &result.Elo, &result.Won, &result.Lost, &result.Games); err != nil {
 		return nil, err
 	}
 

@@ -49,7 +49,7 @@ func eloInitializeDatabase(tx *sql.Tx) (err error) {
 		return
 	}
 
-	_, err = tx.Exec("INSERT INTO elo (user, elo, games) SELECT id, 500.0, 0 FROM user")
+	_, err = tx.Exec("INSERT INTO elo (user, elo, won, lost, games) SELECT id, 500.0, 0, 0, 0 FROM user")
 	if err != nil {
 		return
 	}
@@ -67,19 +67,24 @@ func eloProcessGame(tx *sql.Tx, game Game) (err error) {
 	change := eloGoalFactor(game) * (result - expected)
 
 	changes := make(map[int64]float64)
-	changes[game.Teams[0].Front.Id] = change
-	changes[game.Teams[0].Back.Id] = change
-	changes[game.Teams[1].Front.Id] = -change
-	changes[game.Teams[1].Back.Id] = -change
+	changes[game.Teams[0].Front.Id] = 1
+	changes[game.Teams[0].Back.Id] = 1
+	changes[game.Teams[1].Front.Id] = -1
+	changes[game.Teams[1].Back.Id] = -1
 
-	for user, change := range changes {
+	for user, flag := range changes {
 		var k float64
 		k, err = eloKFactor(tx, user)
 		if err != nil {
 			return
 		}
 
-		err = eloUpdate(tx, user, k*change)
+		r := result
+		if flag < 0 {
+			r = 1 - result
+		}
+
+		err = eloUpdate(tx, user, r, flag*k*change)
 		if err != nil {
 			return
 		}
@@ -153,8 +158,16 @@ func eloKFactor(tx *sql.Tx, user int64) (float64, error) {
 	return (1.0-float64(games)/10)*10.0 + 25.0, nil
 }
 
-func eloUpdate(tx *sql.Tx, user int64, update float64) (err error) {
-	_, err = tx.Exec("UPDATE elo SET elo=elo+?, games=games+1 WHERE user=?",
-		update, user)
+func eloUpdate(tx *sql.Tx, user int64, result float64, update float64) (err error) {
+	var more string
+	if result > .75 {
+		more = ", won=won+1"
+	}
+	if result < .25 {
+		more = ", lost=lost+1"
+	}
+
+	query := "UPDATE elo SET elo=elo+?, games=games+1" + more + " WHERE user=?"
+	_, err = tx.Exec(query, update, user)
 	return
 }
