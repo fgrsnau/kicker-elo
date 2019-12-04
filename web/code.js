@@ -4,34 +4,12 @@ const statusOk = 200;
 const statusUnauthorized = 401;
 const statusForbidden = 403;
 
+var games = [];
+var users = [];
+
 //
 // Helper functions.
 //
-
-function initialize() {
-	var elements = $('select.select-score');
-	elements.html('');
-	for (var i = 0; i <= 10; i++) {
-		elements.append($('<option>', {
-			'value': i,
-			'text': i
-		}));
-	}
-}
-
-function switchToPage(page) {
-	$('main').css('display', 'none');
-	$('#page_' + page).css('display', 'block');
-
-	if (page === 'games') {
-		setTimeout(updateUserList, 0);
-		setTimeout(updateGameList, 0);
-	}
-
-	if (page === 'addgame') {
-		setTimeout(updateUserList, 0);
-	}
-}
 
 function getToken() {
 	return localStorage.getItem('Token');
@@ -74,104 +52,41 @@ function createSwitchHandler(page) {
 }
 
 //
-// Functions for fetching UI elements from server.
+// Functions for fetching information from server.
 //
 
-async function updateGameList() {
-	var token = getToken();
-	if (token === null) {
-		// We're not logged in. Skip it.
-		return;
-	}
-
-	var result;
-	var data = { 'Token': token }
-	try {
-		result = await $.post('/api/v1/games', JSON.stringify(data));
-	} catch (ex) {
-		handleAjaxException(ex);
-	}
-
-	var table = $('#games_table');
-	table.html('<thead><tr><th>Team Orange</th><th>Team Black</th><th>Result</th></tr></thead>');
-	var tbody = table.append($('<tbody>'));
-	result.forEach(function (game) {
-		var col0 = $('<td>').text(
-			`${game.Front1.First} ${game.Front1.Last[0]}. + ${game.Back1.First} ${game.Back1.Last[0]}.`);
-		var col1 = $('<td>').text(
-			`${game.Front2.First} ${game.Front2.Last[0]}. + ${game.Back2.First} ${game.Back2.Last[0]}.`);
-		var col2 = $('<td>').text(
-			`${game.Score1} : ${game.Score2}`);
-
-		if (game.Score1 > game.Score2) {
-			col0.wrapInner('<strong>');
-		}
-
-		if (game.Score2 > game.Score1) {
-			col1.wrapInner('<strong>');
-		}
-
-		if (Math.abs(game.Score2 - game.Score1) > 2) {
-			col2.wrapInner('<strong>');
-		}
-
-		var row = $('<tr>');
-		row.append(col0);
-		row.append(col1);
-		row.append(col2);
-		tbody.append(row);
-	});
+async function fetchEverything() {
+	await Promise.all([fetchGameList(), fetchUserList()]);
 }
 
-async function updateUserList() {
+async function fetchGameList() {
 	var token = getToken();
 	if (token === null) {
 		// We're not logged in. Skip it.
 		return;
 	}
 
-	var result;
 	var data = { 'Token': token }
 	try {
-		result = await $.post('/api/v1/users', JSON.stringify(data));
+		games = await $.post('/api/v1/games', JSON.stringify(data));
 	} catch (ex) {
 		handleAjaxException(ex);
 	}
+}
 
-	result.sort(function(a, b) {
-		if (a.First < b.First) { return -1; }
-		if (a.First > b.First) { return  1; }
-		if (a.Last  < b.Last)  { return -1; }
-		if (a.Last  > b.Last)  { return  1; }
-		return 0;
-	});
+async function fetchUserList() {
+	var token = getToken();
+	if (token === null) {
+		// We're not logged in. Skip it.
+		return;
+	}
 
-	var elements = $('select.select-player');
-	elements.html('<option value="">-</option>');
-	result.forEach(function(user) {
-		elements.append($('<option>', {
-			'value': user.User,
-			'text': `${user.First} ${user.Last}`
-		}));
-	});
-
-	result.sort(function(a, b) {
-		if (a.Elo < b.Elo) { return  1; }
-		if (a.Elo > b.Elo) { return -1; }
-		return 0;
-	});
-
-	var table = $('#users_table');
-	table.html('<thead><tr><th>Player</th><th>Elo Score</th></tr></thead>');
-	var tbody = table.append($('<tbody>'));
-	result.forEach(function(user) {
-		var row = $('<tr>');
-		row.append($('<td>').text(
-			`${user.First} ${user.Last}`));
-		row.append($('<td>').text(
-			`${user.Elo.toFixed(1)}`));
-		tbody.append(row);
-	});
+	var data = { 'Token': token }
+	try {
+		users = await $.post('/api/v1/users', JSON.stringify(data));
+	} catch (ex) {
+		handleAjaxException(ex);
+	}
 }
 
 //
@@ -279,18 +194,120 @@ async function handleAddGame(event) {
 }
 
 //
+// Update UI elements.
+//
+
+function switchToPage(page) {
+	$('main').css('display', 'none');
+	$('#page_' + page).css('display', 'block');
+
+	var f = null;
+	if (page === 'games') {
+		f = async function() {
+			await fetchEverything();
+			updatePageGames();
+		};
+	} else if (page === 'addgame') {
+		f = async function() {
+			await fetchEverything();
+			updatePageAddGame();
+		};
+	}
+
+	if (f !== null) {
+		setTimeout(f, 0);
+	}
+}
+
+function updatePageGames() {
+	var tmp = [...users];
+
+	tmp.sort(function(a, b) {
+		if (a.Elo < b.Elo) { return  1; }
+		if (a.Elo > b.Elo) { return -1; }
+		return 0;
+	});
+
+	var table = $('#users_table');
+	table.html('<thead><tr><th>Player</th><th>Elo Score</th></tr></thead>');
+	var tbody = table.append($('<tbody>'));
+	tmp.forEach(function(user) {
+		var row = $('<tr>');
+		row.append($('<td>').text(`${user.First} ${user.Last}`));
+		row.append($('<td>').text(`${user.Elo.toFixed(1)}`));
+		tbody.append(row);
+	});
+
+	var table = $('#games_table');
+	table.html('<thead><tr><th>Team Orange</th><th>Team Black</th><th>Result</th></tr></thead>');
+	var tbody = table.append($('<tbody>'));
+	games.forEach(function (game) {
+		var cols = [
+			$('<td>').text(`${game.Front1.First} ${game.Front1.Last[0]}. + ${game.Back1.First} ${game.Back1.Last[0]}.`),
+			$('<td>').text(`${game.Front2.First} ${game.Front2.Last[0]}. + ${game.Back2.First} ${game.Back2.Last[0]}.`),
+			$('<td>').text(`${game.Score1} : ${game.Score2}`),
+		]
+
+		if (game.Score1 > game.Score2) {
+			cols[0].wrapInner('<strong>');
+		}
+
+		if (game.Score2 > game.Score1) {
+			cols[1].wrapInner('<strong>');
+		}
+
+		if (Math.abs(game.Score2 - game.Score1) > 2) {
+			cols[2].wrapInner('<strong>');
+		}
+
+		$('<tr>').append(...cols).appendTo(tbody);
+	});
+}
+
+function updatePageAddGame() {
+	var tmp = [...users];
+
+	tmp.sort(function(a, b) {
+		if (a.First < b.First) { return -1; }
+		if (a.First > b.First) { return  1; }
+		if (a.Last  < b.Last)  { return -1; }
+		if (a.Last  > b.Last)  { return  1; }
+		return 0;
+	});
+
+	var elements = $('select.select-player');
+	elements.html('<option value="">-</option>');
+	tmp.forEach(function(user) {
+		elements.append($('<option>', {
+			'value': user.User,
+			'text': `${user.First} ${user.Last}`
+		}));
+	});
+}
+
+//
 // Initialization.
 //
 
 $(document).ready(function() {
-	initialize();
+	// Create score options in select input fields.
+	var elements = $('select.select-score');
+	elements.html('');
+	for (var i = 0; i <= 10; i++) {
+		elements.append($('<option>', {
+			'value': i,
+			'text': i
+		}));
+	}
 
+	// If we are not logged in, show the login prompt. Otherwise main screen.
 	if (getToken() === null) {
 		switchToPage('login');
 	} else {
 		switchToPage('games');
 	}
 
+	// Setup all click handlers.
 	$('#login_register').click(createSwitchHandler('register'));
 	$('#form_login button[type="submit"]').click(handleLogin);
 	$('#form_register button[type="submit"]').click(handleRegister);
