@@ -90,10 +90,10 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 	var response []ResponseItem
 
 	if user := webParseRequestAndVerifyToken(w, r, &request); user != "" {
-		users := Db.GetUsers()
-		response = make([]ResponseItem, len(users))
-		for i, user := range users {
-			response[i] = ResponseItem{
+		userChan := Db.GetUsers()
+		response = make([]ResponseItem, 0, 50)
+		for user := range userChan {
+			response = append(response, ResponseItem{
 				User:  user.User,
 				First: user.First,
 				Last:  user.Last,
@@ -101,7 +101,7 @@ func webHandleUsers(w http.ResponseWriter, r *http.Request) {
 				Won:   user.Won,
 				Lost:  user.Lost,
 				Games: user.Games,
-			}
+			})
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -179,12 +179,12 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
-		var users [5]*User
+		var users [5]User
 		usernames := [5]string{tokenUser, request.Teams[0][0], request.Teams[0][1],
 			request.Teams[1][0], request.Teams[1][1]}
 		for i, username := range usernames {
-			user, err := Db.GetUser(username)
-			if err != nil || user == nil {
+			user, ok := Db.GetUser(username)
+			if !ok {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -198,10 +198,10 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 		}
 
 		game := &Game{}
-		game.Teams[0].Front = *users[1]
-		game.Teams[0].Back = *users[2]
-		game.Teams[1].Front = *users[3]
-		game.Teams[1].Back = *users[4]
+		game.Teams[0].Front = users[1]
+		game.Teams[0].Back = users[2]
+		game.Teams[1].Front = users[3]
+		game.Teams[1].Back = users[4]
 		game.Score = request.Score
 		Db.AddGame(game)
 		Db.AddSignOff(users[0], game)
@@ -216,9 +216,9 @@ func webHandleAddSignOff(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tokenUser := webParseRequestAndVerifyToken(w, r, &request); tokenUser != "" {
-		user, err := Db.GetUser(tokenUser)
-		if err != nil {
-			panic(err)
+		user, ok := Db.GetUser(tokenUser)
+		if !ok {
+			panic("TokenUser not found")
 		}
 
 		Db.AddSignOff(user, &Game{Id: request.Game}) // FIXME: Quite hacky :-/
