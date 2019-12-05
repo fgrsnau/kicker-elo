@@ -15,6 +15,14 @@ main {
 	display: none;
 }
 
+#github-logo {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 8em;
+	height: 8em;
+}
+
 /*
  * Make input fields bigger in case a touchscreen or similar is used.
  */
