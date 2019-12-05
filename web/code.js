@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const statusOk = 200;
 const statusUnauthorized = 401;
@@ -66,7 +66,7 @@ async function fetchGameList() {
 		return;
 	}
 
-	var data = { 'Token': token }
+	var data = { 'Token': token };
 	try {
 		games = await $.post('/api/v1/games', JSON.stringify(data));
 	} catch (ex) {
@@ -81,7 +81,7 @@ async function fetchUserList() {
 		return;
 	}
 
-	var data = { 'Token': token }
+	var data = { 'Token': token };
 	try {
 		users = await $.post('/api/v1/users', JSON.stringify(data));
 	} catch (ex) {
@@ -96,7 +96,7 @@ async function fetchUserList() {
 async function handleLogin(event) {
 	event.preventDefault();
 
-	var result
+	var result;
 	var form = $('#form_login')[0];
 	var data = {
 		'User': form.username.value,
@@ -125,13 +125,13 @@ function handleLogout() {
 async function handleRegister(event) {
 	event.preventDefault();
 
-	var result
+	var result;
 	var form = $('#form_register')[0];
 	var data = {
 		'User': form.username.value,
 		'Password': form.password.value,
 		'First': form.first.value,
-		'Last': form.last.value
+		'Last': form.last.value,
 	};
 
 	if (data.User.length < 2 || data.Password.length < 3 || data.First === '' || data.Last === '') {
@@ -165,7 +165,7 @@ async function handleAddGame(event) {
 			[form.front2.value, form.back2.value]],
 		'Score': [
 			parseInt(form.score1.value, 10),
-			parseInt(form.score2.value, 10)]
+			parseInt(form.score2.value, 10)],
 	};
 
 	if (data.Teams[0][0] === '' || data.Teams[0][1] == '' || data.Teams[1][0] == '' || data.Teams[1][1] == '') {
@@ -191,7 +191,7 @@ async function handleAddGame(event) {
 	}
 
 	try {
-		await $.post('/api/v1/add_game', JSON.stringify(data))
+		await $.post('/api/v1/add_game', JSON.stringify(data));
 	} catch (ex) {
 		handleAjaxException(ex);
 	}
@@ -258,7 +258,7 @@ function updatePageGames() {
 			$('<td>').text(`${formatName(game.Teams[0].Front)} + ${formatName(game.Teams[0].Back)}`),
 			$('<td>').text(`${formatName(game.Teams[1].Front)} + ${formatName(game.Teams[1].Back)}`),
 			$('<td>').text(`${game.Score[0]} : ${game.Score[1]}`),
-		]
+		];
 
 		for (var i = 0; i < 2; i++) {
 			if (game.Score[i] > game.Score[1-i]) {
@@ -290,7 +290,7 @@ function updatePageAddGame() {
 	tmp.forEach(function(user) {
 		elements.append($('<option>', {
 			'value': user.User,
-			'text': `${user.First} ${user.Last}`
+			'text': `${user.First} ${user.Last}`,
 		}));
 	});
 }
@@ -306,7 +306,7 @@ $(document).ready(function() {
 	for (var i = 0; i <= 10; i++) {
 		elements.append($('<option>', {
 			'value': i,
-			'text': i
+			'text': i,
 		}));
 	}
 
