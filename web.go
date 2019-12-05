@@ -199,9 +199,9 @@ func webHandleAddGame(w http.ResponseWriter, r *http.Request) {
 
 		game := &Game{}
 		game.Teams[0].Front = *users[1]
-		game.Teams[0].Front = *users[2]
-		game.Teams[0].Back = *users[3]
-		game.Teams[0].Back = *users[4]
+		game.Teams[0].Back = *users[2]
+		game.Teams[1].Front = *users[3]
+		game.Teams[1].Back = *users[4]
 		game.Score = request.Score
 		Db.AddGame(game)
 		Db.AddSignOff(users[0], game)

@@ -17,10 +17,11 @@ type Database struct {
 
 func (d *Database) Initialize() {
 	options := [...]string{
-		"_journal_mode=WAL",
-		"foreign_keys=1",
-		"_busy_timeout=30000"}
-	db, err := sql.Open("sqlite3", "elo.db?"+strings.Join(options[:], "&"))
+		"_busy_timeout=15000",
+		"_foreign_keys=1",
+		"_journal_mode=WAL"}
+	connect_string := "elo.db?" + strings.Join(options[:], "&")
+	db, err := sql.Open("sqlite3", connect_string)
 	if err != nil {
 		panic(err)
 	}
