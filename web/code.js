@@ -115,6 +115,7 @@ async function handleLogin(event) {
 	}
 	localStorage.setItem('Token', result['Token']);
 	switchToPage('games');
+	form.reset();
 }
 
 function handleLogout() {
@@ -151,6 +152,7 @@ async function handleRegister(event) {
 	}
 	localStorage.setItem('Token', result['Token']);
 	switchToPage('games');
+	form.reset();
 }
 
 async function handleAddGame(event) {
@@ -197,6 +199,7 @@ async function handleAddGame(event) {
 	}
 
 	switchToPage('games');
+	form.reset();
 }
 
 //
