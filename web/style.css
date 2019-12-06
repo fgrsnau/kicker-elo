@@ -64,30 +64,35 @@ main {
  * Styling of games table.
  */
 
-#page_games table {
-	margin-top: 2em;
-	margin-bottom: 2em;
-	border-collapse: collapse;
-	width: 100%;
-	max-width: 50em;
+#games_tables {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 1em -2em 1em -2em;
 }
 
-#page_games table th,
-#page_games table td {
+#games_tables table {
+	margin: 1em 2em 1em 2em;
+	border-collapse: collapse;
+	width: 100%;
+	max-width: 40em;
+}
+
+#games_tables table th,
+#games_tables table td {
 	text-align: left;
 	padding: .5em;
 	border: 0;
 }
 
-#page_games table strong {
+#games_tables table strong {
 	font-weight: bold;
 }
 
-#page_games table thead {
+#games_tables table thead {
 	color: white;
 	background-color: var(--color-vll-green);
 }
 
-#page_games table tbody tr:nth-child(even) {
+#games_tables table tbody tr:nth-child(even) {
 	background-color: #eee;
 }
