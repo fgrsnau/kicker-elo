@@ -1,4 +1,4 @@
-module github.com/fgrsnau/elo
+module github.com/fgrsnau/kicker-elo
 
 go 1.13
 
