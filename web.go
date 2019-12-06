@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -10,7 +11,17 @@ import (
 
 var WebTokens WebTokenStorage = NewWebTokenStorage()
 
+func webLogRequest(r *http.Request) {
+	remoteString  := r.RemoteAddr
+	forwarded_for := r.Header.Get("X-Forwarded-For")
+	if forwarded_for != "" {
+		remoteString = fmt.Sprintf("%v / %v", remoteString, forwarded_for)
+	}
+	log.Printf("[web] %v - %v", remoteString, r.URL.Path)
+}
+
 func webParseRequest(w http.ResponseWriter, r *http.Request, v interface{}) bool {
+	webLogRequest(r)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return false
