@@ -68,6 +68,7 @@ main {
 	display: flex;
 	flex-wrap: wrap;
 	margin: 1em -2em 1em -2em;
+	width: 100%;
 }
 
 #games_tables table {
