@@ -61,6 +61,9 @@ func init() {
 	DatabaseQueryStrings[DatabaseQueryGamesDesc] = DatabaseQueryStrings[DatabaseQueryGames] + `
 		ORDER BY g.time DESC`
 
+	DatabaseQueryStrings[DatabaseQueryAddGame] = `
+		INSERT INTO game (front1, back1, score1, front2, back2, score2) VALUES (?, ?, ?, ?, ?, ?)`
+
 	DatabaseQueryStrings[DatabaseQueryAddSignOff] = `
 		INSERT INTO signoff (user, game) VALUES (?, ?)`
 }
